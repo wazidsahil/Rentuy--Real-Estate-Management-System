@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = "mysql://root:vengeance@localhost:3306/realestate"
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  role        Role?         @default(user)
+  name        String
+  age         Int
+  gender      Gender        @default(male)
+  email       String        @unique
+  contact     String
+  city        City
+  password    String
+  properties  Property[]
+  applications Application[]
+  transactions Transaction[]
+}
+
+model Property {
+  id             Int           @id @default(autoincrement())
+  property_name           String
+  image          String
+  status         PropertyStatus @default(available)
+  property_use   PropertyUse
+  neighborhood   String
+  size           Int
+  beds           Int
+  baths          Int
+  property_type  PropertyType
+  city           City
+  owner_email    String
+  owner          User          @relation(fields: [owner_email], references: [email])
+  transactions   Transaction[]
+  applications   Application[]
+ rental         PropertyRental? @relation("PropertyToRental")
+  sale           PropertySale?   @relation("PropertyToSale")
+  rentalId       Int?            @unique
+  saleId         Int?            @unique
+}
+
+model PropertySale {
+  id          Int      @id @default(autoincrement())
+  price       Int
+  propertyId  Int      @unique
+  property    Property  @relation("PropertyToSale", fields: [propertyId], references: [id])
+}
+
+model PropertyRental {
+  id          Int      @id @default(autoincrement())
+  monthly_rent Int
+  lease_term   Int
+  propertyId   Int      @unique
+  property     Property  @relation("PropertyToRental", fields: [propertyId], references: [id])
+}
+
+model Application {
+  id              Int        @id @default(autoincrement())
+  status          Status
+  propertyId      Int
+  property        Property   @relation(fields: [propertyId], references: [id])
+  applicant_email String
+  applicant       User       @relation(fields: [applicant_email], references: [email])
+}
+
+model Transaction {
+  id              Int        @id @default(autoincrement())
+  transaction_type TransactionType
+  date            DateTime
+  final_price     Int
+  status          Status      @default(pending)
+  propertyId      Int
+  property        Property    @relation(fields: [propertyId], references: [id])
+  client_email    String
+  client          User        @relation(fields: [client_email], references: [email])
+}
+
+enum Gender {
+  male
+  female
+}
+
+enum City {
+  Chattogram
+  Dhaka
+  Khulna
+  Mymensingh
+  Rajshahi
+  Barisal
+  Rangpur
+  Sylhet
+}
+
+enum PropertyStatus {
+  available
+  taken
+}
+
+enum PropertyUse {
+  rental
+  sale
+}
+
+enum PropertyType {
+  residential
+  commercial
+  industrial
+}
+
+enum Status {
+  pending
+  accepted
+  declined
+}
+
+enum TransactionType {
+  sale
+  rent
+}
+
+enum Role {
+  user
+  admin
+}
